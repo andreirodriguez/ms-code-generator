@@ -13,7 +13,6 @@ import pe.company.mscodegenerator.application.domain.Table;
 import pe.company.mscodegenerator.application.mapper.ConnectionDbMapper;
 import pe.company.mscodegenerator.application.mapper.TableMapper;
 import pe.company.mscodegenerator.api.request.ConnectionDbRequest;
-import pe.company.mscodegenerator.api.request.TableRequest;
 import pe.company.mscodegenerator.api.response.TableResponse;
 
  
@@ -29,11 +28,6 @@ public class TableController
 	{		 
  		List<Table> l = tableService.getSelect(ConnectionDbMapper.MapperFromConnectionDbRequest(request));
 		
-		List<TableResponse> o = new ArrayList<TableResponse>();
-		
-		for(Table i:l)
-			o.add(TableMapper.MapperToTableResponse(i));
-		
-		return new ResponseEntity<>(o,HttpStatus.OK);
+		return new ResponseEntity<>(TableMapper.MapperToListTableResponse(l),HttpStatus.OK);
 	}	
 }

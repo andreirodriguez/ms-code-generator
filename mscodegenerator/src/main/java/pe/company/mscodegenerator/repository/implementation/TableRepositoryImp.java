@@ -28,7 +28,7 @@ public class TableRepositoryImp implements TableRepositoryInt
 	{	
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(SupportDatabase.getDataSourceByConnectionString(connection.getDbType(),connection.getServer(),connection.getDataBase(),connection.getUserName(),connection.getPassword()));
 		
-		String sql = this.getSqlTables(connection.getDbType());
+		String sql = this.getSql(connection.getDbType());
 		
 		return jdbcTemplate.query(sql,new TableSelectRowMapper());		
 	}
@@ -48,7 +48,7 @@ public class TableRepositoryImp implements TableRepositoryInt
 		}
 	}
 	
-	private String getSqlTables(String dbType)
+	private String getSql(String dbType)
 	{
 		String sql = null;
 		
