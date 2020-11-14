@@ -15,36 +15,21 @@ import org.springframework.stereotype.Repository;
 
 import pe.company.mscodegenerator.repository.interfaces.TableRepositoryInt;
 import pe.company.mscodegenerator.application.domain.Table;
+import pe.company.mscodegenerator.cross.utils.SupportDatabase;
+import pe.company.mscodegenerator.cross.variables.DbType;
 
 
 @Repository
 public class TableRepositoryImp implements TableRepositoryInt
 {
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
 	@Override
 	public List<Table> getSearch(String dbType,String connectionString) 
 	{	
-        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-	    dataSourceBuilder.driverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-	    dataSourceBuilder.url("jdbc:sqlserver://localhost\\SQL2019;databaseName=PRUEBA");
-	    dataSourceBuilder.username("sa");
-	    dataSourceBuilder.password("Theo@ndre");
+		JdbcTemplate jdbcTemplate = new JdbcTemplate(SupportDatabase.getDataSourceByConnectionString(dbType, connectionString));
 		
-		JdbcTemplate jdbcTemplate1 = new JdbcTemplate(dataSourceBuilder.build());
+		String sql = this.getSqlTables(dbType);
 		
-		String sql = null;
-		
-		sql = "Select " + 
-				"Table_Schema + '.' + Table_Name [Id]," +
-				"Table_Schema [Schema]," +
-				"Table_Name [Name]" +
-				"FROM INFORMATION_SCHEMA.TABLES " +
-				"Where Table_Type like '%Table%' " +
-				"Order By TABLE_NAME ";
-		
-		return jdbcTemplate1.query(sql,new TableSelectRowMapper());		
+		return jdbcTemplate.query(sql,new TableSelectRowMapper());		
 	}
 	
 	static class TableSelectRowMapper implements RowMapper<Table> 
@@ -60,5 +45,25 @@ public class TableRepositoryImp implements TableRepositoryInt
 			
 			return o;
 		}
+	}
+	
+	private String getSqlTables(String dbType)
+	{
+		String sql = null;
+		
+		switch(dbType)
+		{
+			case DbType.SqlServer:
+				sql = "Select " + 
+						"Table_Schema + '.' + Table_Name [Id]," +
+						"Table_Schema [Schema]," +
+						"Table_Name [Name]" +
+						"FROM INFORMATION_SCHEMA.TABLES " +
+						"Where Table_Type like '%Table%' " +
+						"Order By TABLE_NAME ";				
+				break;
+		}
+		
+		return sql;
 	}
 }

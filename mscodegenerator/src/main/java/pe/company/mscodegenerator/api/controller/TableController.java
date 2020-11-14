@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.company.mscodegenerator.service.interfaces.TableServiceInt;
 import pe.company.mscodegenerator.application.domain.Table;
 import pe.company.mscodegenerator.application.mapper.TableMapper;
+import pe.company.mscodegenerator.api.request.TableRequest;
 import pe.company.mscodegenerator.api.response.TableResponse;
 
  
@@ -21,10 +22,10 @@ public class TableController
 	@Autowired
 	private TableServiceInt tableService;
 	
-	@GetMapping("/search")
-	public ResponseEntity<List<TableResponse>> getTablesByBD(String dbType,String connectionString) 
+	@PostMapping("/search")
+	public ResponseEntity<List<TableResponse>> getTablesByBD(@RequestBody TableRequest request) 
 	{		 
-		List<Table> l = tableService.getSelect(dbType,connectionString);
+ 		List<Table> l = tableService.getSelect(request.getDbType(),request.getConnectionString());
 		
 		List<TableResponse> o = new ArrayList<TableResponse>();
 		
