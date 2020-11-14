@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
 import pe.company.mscodegenerator.repository.interfaces.TableRepositoryInt;
+import pe.company.mscodegenerator.application.domain.ConnectionDb;
 import pe.company.mscodegenerator.application.domain.Table;
 import pe.company.mscodegenerator.cross.utils.SupportDatabase;
 import pe.company.mscodegenerator.cross.variables.DbType;
@@ -23,11 +24,11 @@ import pe.company.mscodegenerator.cross.variables.DbType;
 public class TableRepositoryImp implements TableRepositoryInt
 {
 	@Override
-	public List<Table> getSearch(String dbType,String connectionString) 
+	public List<Table> getSearch(ConnectionDb connection) 
 	{	
-		JdbcTemplate jdbcTemplate = new JdbcTemplate(SupportDatabase.getDataSourceByConnectionString(dbType, connectionString));
+		JdbcTemplate jdbcTemplate = new JdbcTemplate(SupportDatabase.getDataSourceByConnectionString(connection.getDbType(),connection.getServer(),connection.getDataBase(),connection.getUserName(),connection.getPassword()));
 		
-		String sql = this.getSqlTables(dbType);
+		String sql = this.getSqlTables(connection.getDbType());
 		
 		return jdbcTemplate.query(sql,new TableSelectRowMapper());		
 	}
