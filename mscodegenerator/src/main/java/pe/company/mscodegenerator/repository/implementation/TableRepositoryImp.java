@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import pe.company.mscodegenerator.repository.interfaces.TableRepositoryInt;
 import pe.company.mscodegenerator.application.domain.Table;
 
+
 @Repository
 public class TableRepositoryImp implements TableRepositoryInt
 {
@@ -27,7 +28,7 @@ public class TableRepositoryImp implements TableRepositoryInt
 	{	
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
 	    dataSourceBuilder.driverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-	    dataSourceBuilder.url("jdbc:sqlserver://localhost;databaseName=PRUEBA");
+	    dataSourceBuilder.url("jdbc:sqlserver://localhost\\SQL2019;databaseName=PRUEBA");
 	    dataSourceBuilder.username("sa");
 	    dataSourceBuilder.password("Theo@ndre");
 		
