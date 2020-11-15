@@ -15,6 +15,7 @@ public class Generator
 	private String path;
 	private List<Field> fields = new ArrayList<Field>();
 	private Map<String,String> files = new HashMap<String,String>();
+	private Map<String,StringBuilder> notepads = new HashMap<String,StringBuilder>();
 	
 	public String getProject() {
 		return project;
@@ -63,6 +64,12 @@ public class Generator
 	}
 	public void setFiles(Map<String, String> files) {
 		this.files = files;
+	}	
+	public Map<String, StringBuilder> getNotepads() {
+		return notepads;
+	}
+	public void setNotepads(Map<String, StringBuilder> notepads) {
+		this.notepads = notepads;
 	}	
 
 }

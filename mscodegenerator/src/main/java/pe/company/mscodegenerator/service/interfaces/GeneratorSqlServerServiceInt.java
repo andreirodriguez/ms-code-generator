@@ -1,8 +1,9 @@
-package pe.company.mscodegenerator.repository.interfaces;
+package pe.company.mscodegenerator.service.interfaces;
 
 import pe.company.mscodegenerator.application.domain.Generator;
 
-public interface GeneratorRepositoryInt 
+public interface GeneratorSqlServerServiceInt 
 {
 	Boolean setFiles(Generator generator);
+	
 }

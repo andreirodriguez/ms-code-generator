@@ -11,6 +11,7 @@ import pe.company.mscodegenerator.cross.utils.SupportFile;
 import pe.company.mscodegenerator.repository.interfaces.GeneratorRepositoryInt;
 import pe.company.mscodegenerator.repository.interfaces.TableRepositoryInt;
 import pe.company.mscodegenerator.service.interfaces.GeneratorServiceInt;
+import pe.company.mscodegenerator.service.interfaces.GeneratorSqlServerServiceInt;
 
 @Service
 public class GeneratorServiceImp implements GeneratorServiceInt 
@@ -18,9 +19,13 @@ public class GeneratorServiceImp implements GeneratorServiceInt
 	@Autowired
 	private GeneratorRepositoryInt generatorRepository;
 	
+	@Autowired
+	private GeneratorSqlServerServiceInt generatorSqlServerService;	
+	
 	@Override
 	public Boolean setGenerate(Generator generator) 
 	{
+		//Initialize
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");		
 		String directoryPath = "./files/" + dateFormat.format(new Date(System.currentTimeMillis())); 		
 		
@@ -28,26 +33,11 @@ public class GeneratorServiceImp implements GeneratorServiceInt
 
 		generator.setPath(directoryPath);
 		
-		this.generateSqlServer(generator);
+		//Sql Server
+		generatorSqlServerService.setFiles(generator);
 		
-		return true;
-	}
-
-	private void generateSqlServer(Generator generator)
-	{
-    	String file = null;
-    	String procedure = null;
-    	StringBuilder notepad = null;
-    	String separator = System.getProperty("line.separator");
-    	
-    	//Search 
-    	notepad = new StringBuilder();
 		
-    	procedure = generator.getTable() + "_search";
-    	file = procedure + ".sql";
-    	
-    	notepad.append("Create Procedure " + procedure + separator);
-    	
-    	generatorRepository.setFiles(generator, file, notepad);
+		//Save		
+		return generatorRepository.setFiles(generator);
 	}
 }
