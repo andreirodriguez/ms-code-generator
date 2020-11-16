@@ -16,6 +16,8 @@ public class GeneratorSqlServerServiceImp implements GeneratorSqlServerServiceIn
 		this.setProcedureSearch(generator);
 		
 		this.setProcedureFindAll(generator);
+		
+		this.setProcedureInsertUpdate(generator);
     	
     	return true;
 	}
@@ -30,7 +32,6 @@ public class GeneratorSqlServerServiceImp implements GeneratorSqlServerServiceIn
     	String lineCode;
     	Integer count;
     	
-    	//Search 
     	procedure = generator.getTable() + "_search";
     	file = procedure + ".sql";    	
     	Field primaryKey = generator.getFields().get(0);
@@ -156,7 +157,6 @@ public class GeneratorSqlServerServiceImp implements GeneratorSqlServerServiceIn
     	String lineCode;
     	Integer count;
     	
-    	//Search 
     	procedure = generator.getTable() + "_find_all";
     	file = procedure + ".sql";    	
     	Field primaryKey = generator.getFields().get(0);
@@ -299,5 +299,118 @@ public class GeneratorSqlServerServiceImp implements GeneratorSqlServerServiceIn
     	
     	generator.getNotepads().put(file, notepad);
 	}	
+
+	private void setProcedureInsertUpdate(Generator generator) 
+	{
+    	String file = null;
+    	String procedure = null;
+    	StringBuilder notepad = null;
+    	String separator = System.getProperty("line.separator");
+    	String lineCode;
+    	Integer count;
+    	 
+    	procedure = generator.getTable() + "_insert_update";
+    	file = procedure + ".sql";    	
+    	Field primaryKey = generator.getFields().get(0);
+    	
+    	notepad = new StringBuilder();
+    	
+		notepad.append("Create Procedure " + procedure + separator);
+    	notepad.append("(" + separator);
+    	
+    	count = 1;
+    	for(Field c:generator.getFields())
+    	{
+    		lineCode = "	@pi" + c.getDataTypeDb().substring(0,1) + "_" + c.getNameDb() + " " +  c.getDataTypeLength();
+    		
+    		if(c.getId().equals(primaryKey.getId())) lineCode = lineCode.replace("@pi", "@po") + " output";
+
+    		notepad.append(lineCode);
+    		
+    		if(count < generator.getFields().size()) notepad.append(",");
+    	
+    		notepad.append(separator);
+    		
+    		count++;
+    	}    	
+
+    	notepad.append(")" + separator);
+    	notepad.append("As" + separator);
+    	notepad.append("Begin" + separator);
+    	notepad.append(separator);
+    	notepad.append("	If Not Exists (Select 1 From " + generator.getTable() + " Where " + primaryKey.getNameDb() + "= @po" + primaryKey.getDataTypeDb().substring(0,1) + "_" + primaryKey.getNameDb()  + ")" + separator);
+    	notepad.append("	Begin" + separator);
+    	notepad.append(separator);
+    	notepad.append("		Insert Into " + generator.getTable() + separator);
+    	notepad.append("		(" + separator);
+    	
+		count = 1;
+    	for(Field c:generator.getFields())
+    	{
+    		if(!c.getId().equals(primaryKey.getId()))
+    		{    		
+	    		notepad.append("			" + c.getNameDb());
+	    		
+	    		if(count < generator.getFields().size()) notepad.append(",");
+	    	
+	    		notepad.append(separator);
+    		}
+    		
+    		count++;
+    	}   
+    	
+    	notepad.append("		)" + separator);
+    	notepad.append("		Values" + separator);
+    	notepad.append("		(" + separator);
+    	
+		count = 1;
+    	for(Field c:generator.getFields())
+    	{
+    		if(!c.getId().equals(primaryKey.getId()))
+    		{    		
+	    		notepad.append("			@pi" + c.getDataTypeDb().substring(0,1) + "_" + c.getNameDb());
+	    		
+	    		if(count < generator.getFields().size()) notepad.append(",");    
+	    	
+	    		notepad.append(separator);
+    		}
+    		
+    		count++;
+    	}      	
+    	notepad.append("		);" + separator);
+    	notepad.append(separator);
+    	notepad.append("		Set @po" + primaryKey.getDataTypeDb().substring(0,1) + "_" + primaryKey.getNameDb() + " = SCOPE_IDENTITY();"+ separator);
+    	notepad.append(separator);
+    	notepad.append("	End" + separator);
+    	notepad.append("	Begin" + separator);
+    	notepad.append(separator);
+    	notepad.append("		Update " + generator.getTable() + " Set" + separator);
+    	
+		count = 1;
+    	for(Field c:generator.getFields())
+    	{
+    		if(!c.getId().equals(primaryKey.getId()))
+    		{
+        		notepad.append("		" + c.getNameDb() + " = @pi" + c.getDataTypeDb().substring(0,1) + "_" + c.getNameDb());
+        		
+        		if(count < generator.getFields().size()) notepad.append(",");
+        	
+        		notepad.append(separator);
+    		}
+
+    		count++;
+    	}       	
+    	
+    	notepad.append("		Where " + primaryKey.getNameDb() + " = @po" + primaryKey.getDataTypeDb().substring(0,1) + "_" + primaryKey.getNameDb() + ";" + separator);
+    	notepad.append(separator);
+    	notepad.append("	End;" + separator);
+    	notepad.append(separator);
+    	notepad.append("End;" + separator);
+    	notepad.append(separator);
+    	notepad.append("Go");
+    	
+    	generator.getNotepads().put(file, notepad);
+	}	
+	
 	
 }
