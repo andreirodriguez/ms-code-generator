@@ -17,6 +17,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setViewModel(generator);
 		
 		this.setMapper(generator);
+		
+		this.setIQuery(generator);
 
 		return true;
 	}
@@ -94,6 +96,39 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
      	
 		generator.getNotepads().put(file, notepad);
 	}	
+	
+	private void setIQuery(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+
+    	String classViewModel = generator.getEntity() + "ViewModel";
+    	String classRequest = generator.getEntity() + "Request";
+    	String classIQuery = "I" + generator.getEntity() + "Query";     
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classIQuery + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();   
+    	
+    	notepad.append("using System.Collections.Generic;" + separator);
+    	notepad.append("using System.Threading.Tasks;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Queries.ViewModels;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Application.Queries.Interfaces" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public interface " + classIQuery + separator);
+    	notepad.append("	{" + separator);
+		notepad.append("		Task<" + classViewModel + "> GetById(" + primaryKey.getDataType() + " " + primaryKey.getName() + ");" + separator);
+		notepad.append(separator);
+		notepad.append("		Task<IEnumerable<" + classViewModel + ">> GetBySearch(" + classRequest + " request);" + separator);
+		notepad.append(separator);
+		notepad.append("		Task<PaginationViewModel<" + classViewModel + ">> GetByFindAll(" + classRequest + " request);" + separator);
+    	notepad.append("	}" + separator);
+    	notepad.append("}");    	
+     	
+		generator.getNotepads().put(file, notepad);
+	}		
 	
     private String getPropertyNetCore(Field field) 
     {
