@@ -31,6 +31,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setUpdateCommandHandler(generator);
 		
 		this.setDomain(generator);
+		
+		this.setIRepository(generator);
 
 		return true;
 	}
@@ -452,6 +454,30 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
      	
 		generator.getNotepads().put(file, notepad);
 	}	
+
+	private void setIRepository(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+    	
+    	String classIRepository = "I" + generator.getEntity() + "Repository";
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classIRepository + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();    
+    	
+    	notepad.append("using System.Threading.Tasks;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Domain.Aggregates." + generator.getEntity() + "Aggregate" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public interface " + classIRepository + separator);
+    	notepad.append("	{" + separator);
+		notepad.append("		Task<" + primaryKey.getDataType() + "> Register(" + generator.getEntity() + " " + ConvertFormat.getLowerCamelCase(generator.getEntity()) + ");" + separator);
+    	notepad.append("	}" + separator);
+    	notepad.append("}");    		
+     	
+		generator.getNotepads().put(file, notepad);
+	}		
 	
 	
     private String getPropertyNetCore(Field field) 
