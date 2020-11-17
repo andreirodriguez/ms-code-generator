@@ -19,6 +19,10 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setMapper(generator);
 		
 		this.setIQuery(generator);
+		
+		this.setQuery(generator);
+		
+		this.setCreateCommand(generator);
 
 		return true;
 	}
@@ -129,6 +133,121 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
      	
 		generator.getNotepads().put(file, notepad);
 	}		
+
+	private void setQuery(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+
+    	String classViewModel = generator.getEntity() + "ViewModel";
+    	String classRequest = generator.getEntity() + "Request";
+    	String classMapper = generator.getEntity() + "Mapper";
+    	String classIMapper = "I" + generator.getEntity() + "Mapper";
+    	String classIQuery = "I" + generator.getEntity() + "Query";
+    	String classQuery = generator.getEntity() + "Query";
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classQuery + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();   
+    	
+       	notepad.append("using System;" + separator);
+    	notepad.append("using System.Collections.Generic;" + separator);
+    	notepad.append("using System.Linq;" + separator);
+    	notepad.append("using System.Threading.Tasks;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Utility;" + separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Queries.Interfaces;" + separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Queries.ViewModels;" + separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Queries.Mappers;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Application.Queries.Implementations" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public class " + classQuery + " : " + classIQuery + separator);
+    	notepad.append("	{" + separator);
+    	notepad.append("		private readonly IGenericQuery _iGenericQuery;" + separator);
+    	notepad.append("		private readonly " + classIMapper + " _i" + classMapper + ";" + separator);
+    	notepad.append(separator);
+    	notepad.append("		public " + classQuery + "(IGenericQuery iGenericQuery, " + classIMapper + " i" + classMapper + ")" + separator);
+    	notepad.append("		{" + separator);
+		notepad.append("			_iGenericQuery = iGenericQuery ?? throw new ArgumentNullException(nameof(iGenericQuery));" + separator);
+		notepad.append("			_i" + classMapper + " = i" + classMapper + " ?? throw new ArgumentNullException(nameof(i" + classMapper + "));" + separator);
+    	notepad.append("		}" + separator);    	
+    	notepad.append(separator);
+    	notepad.append("		public async Task<" + classViewModel + "> GetById(" + primaryKey.getDataType() + " " + primaryKey.getName() + ")" + separator);
+    	notepad.append("		{" + separator);
+		notepad.append("			var parameters = new Dictionary<string, object>" + separator);
+		notepad.append("			{" + separator);
+		notepad.append("				{\"" + primaryKey.getNameDb() + "\", " + primaryKey.getName() + "}" + separator);
+		notepad.append("			};" + separator);
+		notepad.append(separator);
+		notepad.append("			var result = await _iGenericQuery.Search(@\"" + generator.getTable() + "_search\", ConvertTo.Xml(parameters));" + separator);
+		notepad.append(separator);
+		notepad.append("			return (result != null) ? _i" + classMapper + ".MapTo" + classViewModel + "(result) : null;" + separator);		
+		notepad.append("		}" + separator);
+    	notepad.append(separator);
+    	notepad.append("		public async Task<IEnumerable<" + classViewModel + ">> GetBySearch(" + classRequest + " request)"+ separator);
+    	notepad.append("		{" + separator);
+		notepad.append("			var parameters = new Dictionary<string, object>" + separator);
+		notepad.append("			{" + separator);
+		notepad.append("				{\"" + primaryKey.getNameDb() + "\", request." + primaryKey.getName() + "}" + separator);
+		notepad.append("			};" + separator);
+		notepad.append(separator);
+		notepad.append("			var result = await _iGenericQuery.Search(@\"" + generator.getTable() + "_search\", ConvertTo.Xml(parameters), request.pagination);" + separator);
+		notepad.append(separator);
+		notepad.append("			var items = result.Select(item => (" + classViewModel + ")_i" + classMapper + ".MapTo" + classViewModel + "(item));" + separator);		
+		notepad.append(separator);
+		notepad.append("			return items;" + separator);		
+		notepad.append("		}" + separator);		
+    	notepad.append(separator);
+    	notepad.append("		public async Task<PaginationViewModel<" + classViewModel + ">> GetByFindAll(" + classRequest + " request)" + separator);
+    	notepad.append("		{" + separator);
+		notepad.append("			var parameters = new Dictionary<string, object>" + separator);
+		notepad.append("			{" + separator);
+		notepad.append("				{\"" + primaryKey.getNameDb() + "\", request." + primaryKey.getName() + "}" + separator);
+		notepad.append("			};" + separator);
+		notepad.append(separator);
+		notepad.append("			var result = await _iGenericQuery.FindAll(@\"" + generator.getTable() + "_find_all\", ConvertTo.Xml(parameters), request.pagination);" + separator);
+		notepad.append(separator);
+		notepad.append("			var items = result.Select(item => (" + classViewModel + ")_i" + classMapper + ".MapTo" + classViewModel + "(item));" + separator);		
+		notepad.append(separator);
+		notepad.append("			return new PaginationViewModel<" + classViewModel + ">(request.pagination, items);" + separator);		
+		notepad.append("		}" + separator);				
+    	notepad.append("	}" + separator);
+    	notepad.append("}");      	
+     	
+		generator.getNotepads().put(file, notepad);
+	}		
+	
+	private void setCreateCommand(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+    	
+    	String classCreateCommand= "Create" + generator.getEntity() + "Command";
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classCreateCommand + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();   
+    	
+    	notepad.append("using System;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using MediatR;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Application.Commands." + generator.getEntity() + "Command" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public class " + classCreateCommand + " : IRequest<" + primaryKey.getDataType() + ">" + separator);
+    	notepad.append("	{" + separator);
+    	
+    	for(Field c:generator.getFields())
+    		if(c.getId() != primaryKey.getId())
+    			notepad.append("		public " + this.getPropertyNetCore(c) + " { get; set; }" + separator);
+    	
+    	notepad.append("	}" + separator);
+    	notepad.append("}"); 	
+     	
+		generator.getNotepads().put(file, notepad);
+	}		
+
 	
     private String getPropertyNetCore(Field field) 
     {
