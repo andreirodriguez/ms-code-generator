@@ -29,6 +29,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setUpdateCommand(generator);
 		
 		this.setUpdateCommandHandler(generator);
+		
+		this.setDomain(generator);
 
 		return true;
 	}
@@ -386,6 +388,70 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		generator.getNotepads().put(file, notepad);
 	}		
 	
+	private void setDomain(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+    	String lineCode;
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = generator.getEntity() + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();   
+    	
+    	notepad.append("using System;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using " + generator.getProject() + ".Domain.Core;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Domain.Aggregates." + generator.getEntity() + "Aggregate" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public class " + generator.getEntity() + " : Entity" + separator);
+    	notepad.append("	{" + separator);
+    	
+    	for(Field c:generator.getFields())
+    	{
+    		if(c.getId()==primaryKey.getId())
+    			notepad.append("		public " + this.getPropertyNetCore(c) + " { get; set; }" + separator);
+    		else
+    			notepad.append("		public " + this.getPropertyNetCore(c) + " { get; }" + separator);
+    	}
+    	
+    	notepad.append(separator);
+    	notepad.append("		public " + generator.getEntity() + "()" + separator);
+    	notepad.append("		{" + separator);
+    	notepad.append("		}" + separator);
+    	
+    	lineCode = "";
+    	for(Field c:generator.getFields())
+    		if(c.getId()!=primaryKey.getId())
+    			lineCode += ", " + this.getPropertyNetCore(c);
+    	
+    	notepad.append(separator);    	
+    	notepad.append("		public " + generator.getEntity() + "(" + lineCode.substring(1) + ")" + separator);
+    	notepad.append("		{" + separator);
+    	
+    	for(Field c:generator.getFields())
+    		if(c.getId()!=primaryKey.getId()) 	
+				notepad.append("			this." + c.getName() + " = " + c.getName() + ";" + separator);
+    	
+    	notepad.append("		}" + separator);    	
+
+    	lineCode = "";
+    	for(Field c:generator.getFields())
+    		lineCode += ", " + this.getPropertyNetCore(c);
+    	
+    	notepad.append(separator);    	
+    	notepad.append("		public " + generator.getEntity() + "(" + lineCode.substring(1) + ")" + separator);
+    	notepad.append("		{" + separator);
+    	
+    	for(Field c:generator.getFields())  	
+			notepad.append("			this." + c.getName() + " = " + c.getName() + ";" + separator);
+    	
+    	notepad.append("		}" + separator);    	
+    	notepad.append("	}" + separator);
+    	notepad.append("}");
+     	
+		generator.getNotepads().put(file, notepad);
+	}	
 	
 	
     private String getPropertyNetCore(Field field) 
