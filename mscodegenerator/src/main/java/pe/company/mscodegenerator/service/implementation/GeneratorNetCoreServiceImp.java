@@ -25,6 +25,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setCreateCommand(generator);
 		
 		this.setCreateCommandHandler(generator);
+		
+		this.setUpdateCommand(generator);
 
 		return true;
 	}
@@ -302,6 +304,36 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		generator.getNotepads().put(file, notepad);
 	}			
 
+	private void setUpdateCommand(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+
+    	String classUpdateCommand= "Update" + generator.getEntity() + "Command";
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classUpdateCommand + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();   
+    	
+    	notepad.append("using System;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using MediatR;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Application.Commands." + generator.getEntity() + "Command" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public class " + classUpdateCommand + " : IRequest<" + primaryKey.getDataType() + ">" + separator);
+    	notepad.append("	{" + separator);
+    	
+    	for(Field c:generator.getFields())
+			notepad.append("		public " + this.getPropertyNetCore(c) + " { get; set; }" + separator);
+    	
+    	notepad.append("	}" + separator);
+    	notepad.append("}");
+     	
+		generator.getNotepads().put(file, notepad);
+	}		
+	
+	
 	
     private String getPropertyNetCore(Field field) 
     {
