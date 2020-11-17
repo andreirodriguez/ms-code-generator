@@ -33,6 +33,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setDomain(generator);
 		
 		this.setIRepository(generator);
+		
+		this.setRepository(generator);
 
 		return true;
 	}
@@ -479,6 +481,73 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		generator.getNotepads().put(file, notepad);
 	}		
 	
+	private void setRepository(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+
+    	String classIRepository = "I" + generator.getEntity() + "Repository";
+    	String classRepository = generator.getEntity() + "Repository";
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classRepository + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();     
+    	
+    	notepad.append("using System;" + separator);
+    	notepad.append("using System.Data;" + separator);
+    	notepad.append("using System.Data.SqlClient;" + separator);
+    	notepad.append("using System.Threading.Tasks;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using Dapper;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using " + generator.getProject() +  ".Domain.Exceptions;" + separator);
+    	notepad.append("using " + generator.getProject() +  ".Domain.Aggregates." + generator.getEntity() + "Aggregate;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Repository" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public class " + classRepository + " : " + classIRepository + separator);
+    	notepad.append("	{" + separator);
+		notepad.append("		readonly string _connectionString = string.Empty;" + separator);
+		notepad.append(separator);
+		notepad.append("		public " + classRepository + "(string connectionString)" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			_connectionString = connectionString;" + separator);
+		notepad.append("		}" + separator);
+		notepad.append(separator);
+		notepad.append("		public async Task<" + primaryKey.getDataType() + "> Register(" + generator.getEntity() + " " + ConvertFormat.getLowerCamelCase(generator.getEntity()) + ")" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			using (var connection = new SqlConnection(_connectionString))" + separator);
+		notepad.append("			{" + separator);
+		notepad.append("				await connection.OpenAsync();" + separator);
+		notepad.append(separator);
+		notepad.append("				try" + separator);
+		notepad.append("				{" + separator);
+		notepad.append("					var parameters = new DynamicParameters();" + separator);
+		notepad.append(separator);
+		
+		for(Field c:generator.getFields())
+			notepad.append("					" + this.getDynamicParameter(generator, c, primaryKey.getName().equals(c.getName())) + separator);
+		
+		notepad.append(separator);
+		
+		notepad.append("					var result = await connection.ExecuteAsync(@\"" + generator.getTable() + "_insert_update\", parameters, commandType: CommandType.StoredProcedure);" + separator);
+		notepad.append(separator);
+		notepad.append("					" + ConvertFormat.getLowerCamelCase(generator.getEntity()) + "." + primaryKey.getName() + " = parameters.Get<" + primaryKey.getDataType() + ">(\"@po" + primaryKey.getDataType().substring(0,1) + "_" + primaryKey.getNameDb() + "\");" + separator);
+		notepad.append(separator);
+		notepad.append("					return " + ConvertFormat.getLowerCamelCase(generator.getEntity()) + "." + primaryKey.getName() +  ";" + separator);
+		notepad.append("				}" + separator);
+		notepad.append("				catch (Exception ex)" + separator);
+		notepad.append("				{" + separator);
+		notepad.append("					throw new " + generator.getProject() + "BaseException(ex.Message);" + separator);
+		notepad.append("				}" + separator);
+		notepad.append("			}" + separator);
+		notepad.append("		}" + separator);		
+    	notepad.append("	}" + separator);
+    	notepad.append("}");   		
+     	
+		generator.getNotepads().put(file, notepad);
+	}			
+	
 	
     private String getPropertyNetCore(Field field) 
     {
@@ -490,5 +559,43 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
     	
 		return field.getDataType() + nulleable +  " " + field.getName();
     }	
+    
+    private String getDynamicParameter(Generator generador,Field field,Boolean inputOutput)
+    {
+    	String dbType = "DbType.String";
+    	
+    	switch(field.getDataType())
+    	{
+    		case "int":
+    			dbType = "DbType.Int32";
+    			break;
+    		case "string":
+				dbType = "DbType.String";
+				break;    		
+    		case "decimal":
+				dbType = "DbType.Decimal";
+				break;    			
+    		case "DateTime":
+				dbType = "DbType.DateTime";
+				break;    			
+    		case "bool":
+				dbType = "DbType.Boolean";
+				break;    							
+    	}
+    	
+    	
+    	String parameter = "parameters.Add(";
+    	
+    	parameter += "\"@p" + (inputOutput ? "o" : "i") +  field.getDataTypeDb().substring(0,1) + "_" + field.getNameDb() + "\", ";
+    	
+    	parameter += ConvertFormat.getLowerCamelCase(generador.getEntity()) + "." + field.getName() + ", ";
+    	
+    	parameter += dbType + ", ";
+    	
+    	parameter += (inputOutput ? "ParameterDirection.InputOutput" : "ParameterDirection.Input") + ");";
+    	
+    	return parameter;
+    }
+    
     
 }
