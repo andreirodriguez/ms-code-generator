@@ -35,6 +35,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setIRepository(generator);
 		
 		this.setRepository(generator);
+		
+		this.setController(generator);
 
 		return true;
 	}
@@ -547,6 +549,115 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
      	
 		generator.getNotepads().put(file, notepad);
 	}			
+
+	private void setController(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+
+    	String classViewModel = generator.getEntity() + "ViewModel";
+    	String classRequest = generator.getEntity() + "Request";
+    	String classIQuery = "I" + generator.getEntity() + "Query";
+    	String classController = generator.getEntity() + "Controller";
+    	String classCommand= generator.getEntity() + "Command";
+    	String classCreateCommand= "Create" + generator.getEntity() + "Command";
+    	String classUpdateCommand= "Update" + generator.getEntity() + "Command";
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classController + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();   
+    	
+    	notepad.append("using System;" + separator);
+    	notepad.append("using System.Collections.Generic;" + separator);
+    	notepad.append("using System.Net;" + separator);
+    	notepad.append("using System.Threading.Tasks;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using MediatR;" + separator);
+    	notepad.append("using Microsoft.AspNetCore.Authorization;" + separator);
+    	notepad.append("using Microsoft.AspNetCore.Mvc;" + separator);
+    	notepad.append(separator);    	
+    	notepad.append("using " + generator.getProject() + ".API.Services;" + separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Queries.Interfaces;" + separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Queries.ViewModels;" + separator);
+    	notepad.append("using " + generator.getProject() + ".Application.Commands." + classCommand + ";" + separator);    	
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".API.Controllers" + separator);
+    	notepad.append("{" + separator);
+		notepad.append("	[Authorize]" + separator);
+    	notepad.append("	[Route(\"" + ConvertFormat.getLowerCamelCase(generator.getEntity()) + "s\")]" + separator);
+    	notepad.append("	[ApiController]" + separator);
+    	notepad.append("	public class " + classController + " : ControllerBase" + separator);
+    	notepad.append("	{" + separator);
+		notepad.append("		readonly " + classIQuery + " _" + ConvertFormat.getLowerCamelCase(classIQuery) + ";" + separator);
+		notepad.append("		readonly ISomeService _someServices;" + separator);
+		notepad.append("		readonly IMediator _mediator;" + separator);
+		notepad.append(separator);
+		notepad.append("		public " + classController + "(" + classIQuery + " " + ConvertFormat.getLowerCamelCase(classIQuery) + ", ISomeService someServices,IMediator mediator)" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			_" + ConvertFormat.getLowerCamelCase(classIQuery) + " = " + ConvertFormat.getLowerCamelCase(classIQuery) + " ?? throw new ArgumentNullException(nameof(" + ConvertFormat.getLowerCamelCase(classIQuery) + "));" + separator);
+		notepad.append("			_someServices = someServices ?? throw new ArgumentNullException(nameof(someServices));" + separator);
+		notepad.append("			_mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));" + separator);
+		notepad.append("		}" + separator);
+		notepad.append(separator);
+		notepad.append("		[HttpGet]" + separator);
+		notepad.append("		[Route(\"{" + primaryKey.getName() + "}\")]" + separator);
+		notepad.append("		[ProducesResponseType(typeof(" + classViewModel + "), (int)HttpStatusCode.OK)]" + separator);
+		notepad.append("		[ProducesResponseType((int)HttpStatusCode.NotFound)]" + separator);
+		notepad.append("		public async Task<IActionResult> GetById(" + primaryKey.getDataType() + " " + primaryKey.getName() + ")" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			var result = await _" + ConvertFormat.getLowerCamelCase(classIQuery) + ".GetById(" + primaryKey.getName() + ");" + separator);
+		notepad.append(separator);
+		notepad.append("			if (result != null)" + separator);
+		notepad.append("				return Ok(result);" + separator);
+		notepad.append("			else" + separator);
+		notepad.append("				return NotFound();" + separator);
+		notepad.append("		}" + separator);
+		notepad.append(separator);
+		notepad.append("		[HttpGet]" + separator);
+		notepad.append("		[Route(\"search\")]" + separator);
+		notepad.append("		[ProducesResponseType(typeof(IEnumerable<" + classViewModel + ">), (int)HttpStatusCode.OK)]" + separator);
+		notepad.append("		public async Task<IActionResult> GetBySearch([FromQuery] " + classRequest + " request)" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			var result = await _" + ConvertFormat.getLowerCamelCase(classIQuery) + ".GetBySearch(request);" + separator);
+		notepad.append(separator);
+		notepad.append("			return Ok(result);" + separator);
+		notepad.append("		}" + separator);		
+		notepad.append(separator);
+		notepad.append("		[HttpGet]" + separator);
+		notepad.append("		[Route(\"find-all\")]" + separator);
+		notepad.append("		[ProducesResponseType(typeof(PaginationViewModel<" + classViewModel + ">), (int)HttpStatusCode.OK)]" + separator);
+		notepad.append("		public async Task<IActionResult> GetByFindAll([FromQuery] " + classRequest + " request)" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			var result = await _" + ConvertFormat.getLowerCamelCase(classIQuery) + ".GetByFindAll(request);" + separator);
+		notepad.append(separator);
+		notepad.append("			return Ok(result);" + separator);
+		notepad.append("		}" + separator);				
+		notepad.append(separator);
+		notepad.append("		[HttpPost]" + separator);
+		notepad.append("		[ProducesResponseType((int)HttpStatusCode.Created)]" + separator);
+		notepad.append("		[ProducesResponseType((int)HttpStatusCode.BadRequest)]" + separator);
+		notepad.append("		public async Task<IActionResult> Create" + generator.getEntity() + "(" + classCreateCommand + " command)" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			var result = await _mediator.Send(command);" + separator);
+		notepad.append(separator);
+		notepad.append("			return CreatedAtAction(nameof(Create" + generator.getEntity() + "), result);" + separator);
+		notepad.append("		}" + separator);						
+		notepad.append(separator);
+		notepad.append("		[HttpPut]" + separator);
+		notepad.append("		[ProducesResponseType((int)HttpStatusCode.OK)]" + separator);
+		notepad.append("		[ProducesResponseType((int)HttpStatusCode.BadRequest)]" + separator);
+		notepad.append("		public async Task<IActionResult> Update" + generator.getEntity() + "(" + classUpdateCommand + " command)" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			var result = await _mediator.Send(command);" + separator);
+		notepad.append(separator);
+		notepad.append("			return Ok(result);" + separator);
+		notepad.append("		}" + separator);								
+    	notepad.append("	}" + separator);
+    	notepad.append("}");   
+     	
+		generator.getNotepads().put(file, notepad);
+	}			
+	
 	
 	
     private String getPropertyNetCore(Field field) 
