@@ -15,6 +15,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 	public Boolean setFiles(Generator generator) 
 	{
 		this.setViewModel(generator);
+		
+		this.setMapper(generator);
 
 		return true;
 	}
@@ -23,13 +25,10 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 	private void setViewModel(Generator generator)
 	{
     	String separator = System.getProperty("line.separator");
-    	String lineCode;
-    	Integer count;
 
     	String classViewModel = generator.getEntity() + "ViewModel";
     	String classRequest = generator.getEntity() + "Request";    	
     	
-    	String prefixTable = generator.getTable().split("\\.")[1].toUpperCase().substring(0,3);
     	Field primaryKey = generator.getFields().get(0);
     	String file = classViewModel + ".cs";
     	
@@ -55,6 +54,46 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
     	
 		generator.getNotepads().put(file, notepad);
 	}
+	
+	private void setMapper(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+
+    	String classViewModel = generator.getEntity() + "ViewModel";
+    	String classMapper = generator.getEntity() + "Mapper";
+    	String classIMapper = "I" + generator.getEntity() + "Mapper";
+    	
+    	String file = classMapper + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();   
+    	
+    	notepad.append("using " + generator.getProject() + ".Application.Queries.ViewModels;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Application.Queries.Mappers" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public interface " + classIMapper + separator);
+    	notepad.append("	{" + separator);
+		notepad.append("		" + classViewModel + " MapTo" + classViewModel + "(dynamic r);" + separator);
+    	notepad.append("	}" + separator);
+    	notepad.append(separator);
+    	notepad.append("	public class " + classMapper + " : " + classIMapper +  separator);
+    	notepad.append("	{" + separator);
+		notepad.append("		public " + classViewModel + " MapTo" + classViewModel + "(dynamic r)" + separator);
+		notepad.append("		{" + separator);
+		notepad.append("			" + classViewModel + " o" + " = new " + classViewModel + "();"  + separator);
+		notepad.append(separator);
+		
+		for(Field c:generator.getFields())
+			notepad.append("			o." + c.getName() + " =  r." + c.getNameDb() + ";" + separator);
+		
+		notepad.append(separator);
+		notepad.append("			return o;" + separator);
+		notepad.append("		}" + separator);
+    	notepad.append("	}" + separator);    	
+    	notepad.append("}");
+     	
+		generator.getNotepads().put(file, notepad);
+	}	
 	
     private String getPropertyNetCore(Field field) 
     {
