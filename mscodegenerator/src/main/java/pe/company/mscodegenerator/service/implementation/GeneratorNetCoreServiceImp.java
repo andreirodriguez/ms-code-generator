@@ -27,6 +27,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setCreateCommandHandler(generator);
 		
 		this.setUpdateCommand(generator);
+		
+		this.setUpdateCommandHandler(generator);
 
 		return true;
 	}
@@ -327,6 +329,57 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
     	for(Field c:generator.getFields())
 			notepad.append("		public " + this.getPropertyNetCore(c) + " { get; set; }" + separator);
     	
+    	notepad.append("	}" + separator);
+    	notepad.append("}");
+     	
+		generator.getNotepads().put(file, notepad);
+	}	
+	
+	private void setUpdateCommandHandler(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+    	String lineCode;
+
+    	String classIRepository = "I" + generator.getEntity() + "Repository";
+    	String classUpdateCommand= "Update" + generator.getEntity() + "Command";
+    	String classUpdateCommandHandler= classUpdateCommand + "Handler";    
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classUpdateCommandHandler + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();    
+    	
+    	notepad.append("using MediatR;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using System.Threading;" + separator);	
+    	notepad.append("using System.Threading.Tasks;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using " + generator.getProject() + ".Domain.Aggregates." + generator.getEntity() + "Aggregate;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Application.Commands." + generator.getEntity() + "Command" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public class " + classUpdateCommandHandler + " : IRequestHandler<" + classUpdateCommand + ", " + primaryKey.getDataType() + ">" + separator);
+    	notepad.append("	{" + separator);
+    	notepad.append("		readonly " + classIRepository + " _" + ConvertFormat.getLowerCamelCase(classIRepository) + ";" + separator);
+    	notepad.append(separator);
+    	notepad.append("		public " + classUpdateCommandHandler + "(" + classIRepository + " " + ConvertFormat.getLowerCamelCase(classIRepository) + ")" + separator);
+    	notepad.append("		{" + separator);
+    	notepad.append("			_" + ConvertFormat.getLowerCamelCase(classIRepository) + " = " +  ConvertFormat.getLowerCamelCase(classIRepository) + ";" + separator);
+    	notepad.append("		}" + separator);
+    	notepad.append(separator);
+    	notepad.append("		public async Task<" + primaryKey.getDataType() + "> Handle(" + classUpdateCommand + " request, CancellationToken cancellationToken)" + separator);
+    	notepad.append("		{" + separator);
+    	
+    	lineCode = "";
+    	for(Field c:generator.getFields())
+    		lineCode += ", request." + c.getName(); 
+    	
+    	notepad.append("			" + generator.getEntity() + " " + ConvertFormat.getLowerCamelCase(generator.getEntity()) + " = new " + generator.getEntity() + "(" + lineCode.substring(1) + ");" + separator);
+    	notepad.append(separator);
+    	notepad.append("			var result = await _" +  ConvertFormat.getLowerCamelCase(classIRepository) + ".Register(" + ConvertFormat.getLowerCamelCase(generator.getEntity()) + ");" + separator);
+    	notepad.append(separator);
+    	notepad.append("			return result;" + separator);
+    	notepad.append("		}" + separator);    	
     	notepad.append("	}" + separator);
     	notepad.append("}");
      	
