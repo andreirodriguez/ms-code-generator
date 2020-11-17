@@ -1,11 +1,11 @@
 package pe.company.mscodegenerator.service.implementation;
 
-import pe.company.mscodegenerator.application.domain.Generator;
-
 import org.springframework.stereotype.Service;
 
+import pe.company.mscodegenerator.application.domain.Generator;
 import pe.company.mscodegenerator.application.domain.Field;
 import pe.company.mscodegenerator.service.interfaces.GeneratorNetCoreServiceInt;
+import pe.company.mscodegenerator.cross.utils.ConvertFormat;
 
 @Service
 public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt 
@@ -23,6 +23,8 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
 		this.setQuery(generator);
 		
 		this.setCreateCommand(generator);
+		
+		this.setCreateCommandHandler(generator);
 
 		return true;
 	}
@@ -247,6 +249,58 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
      	
 		generator.getNotepads().put(file, notepad);
 	}		
+	
+	private void setCreateCommandHandler(Generator generator)
+	{
+    	String separator = System.getProperty("line.separator");
+    	String lineCode;
+
+    	String classIRepository = "I" + generator.getEntity() + "Repository";
+    	String classCreateCommand= "Create" + generator.getEntity() + "Command";
+    	String classCreateCommandHandler= classCreateCommand + "Handler";
+    	
+    	Field primaryKey = generator.getFields().get(0);
+    	String file = classCreateCommandHandler + ".cs";
+    	
+    	StringBuilder notepad = new StringBuilder();    
+    	
+    	notepad.append("using MediatR;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using System.Threading;" + separator);	
+    	notepad.append("using System.Threading.Tasks;" + separator);
+    	notepad.append(separator);
+    	notepad.append("using " + generator.getProject() + ".Domain.Aggregates." + generator.getEntity() + "Aggregate;" + separator);
+    	notepad.append(separator);
+    	notepad.append("namespace " + generator.getProject() + ".Application.Commands." + generator.getEntity() + "Command" + separator);
+    	notepad.append("{" + separator);
+    	notepad.append("	public class " + classCreateCommandHandler + " : IRequestHandler<" + classCreateCommand + ", " + primaryKey.getDataType() + ">" + separator);
+    	notepad.append("	{" + separator);
+    	notepad.append("		readonly " + classIRepository + " _" + ConvertFormat.getLowerCamelCase(classIRepository) + ";" + separator);
+    	notepad.append(separator);
+    	notepad.append("		public " + classCreateCommandHandler + "(" + classIRepository + " " + ConvertFormat.getLowerCamelCase(classIRepository) + ")" + separator);
+    	notepad.append("		{" + separator);
+    	notepad.append("			_" + ConvertFormat.getLowerCamelCase(classIRepository) + " = " +  ConvertFormat.getLowerCamelCase(classIRepository) + ";" + separator);
+    	notepad.append("		}" + separator);
+    	notepad.append(separator);
+    	notepad.append("		public async Task<" + primaryKey.getDataType() + "> Handle(" + classCreateCommand + " request, CancellationToken cancellationToken)" + separator);
+    	notepad.append("		{" + separator);
+    	
+    	lineCode = "";
+    	for(Field c:generator.getFields())
+    		if(c.getId()!=primaryKey.getId())
+    			lineCode += ", request." + c.getName(); 
+    	
+    	notepad.append("			" + generator.getEntity() + " " + ConvertFormat.getLowerCamelCase(generator.getEntity()) + " = new " + generator.getEntity() + "(" + lineCode.substring(1) + ");" + separator);
+    	notepad.append(separator);
+    	notepad.append("			var result = await _" +  ConvertFormat.getLowerCamelCase(classIRepository) + ".Register(" + ConvertFormat.getLowerCamelCase(generator.getEntity()) + ");" + separator);
+    	notepad.append(separator);
+    	notepad.append("			return result;" + separator);
+    	notepad.append("		}" + separator);    	
+    	notepad.append("	}" + separator);
+    	notepad.append("}");
+     	
+		generator.getNotepads().put(file, notepad);
+	}			
 
 	
     private String getPropertyNetCore(Field field) 
@@ -259,4 +313,5 @@ public class GeneratorNetCoreServiceImp implements GeneratorNetCoreServiceInt
     	
 		return field.getDataType() + nulleable +  " " + field.getName();
     }	
+    
 }
