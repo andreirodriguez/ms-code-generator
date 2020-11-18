@@ -30,19 +30,23 @@ public class GeneratorServiceImp implements GeneratorServiceInt
 	{
 		//Initialize
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");		
-		String directoryPath = "./files/" + dateFormat.format(new Date(System.currentTimeMillis())); 		
+		String directoryPath = "./files/" + dateFormat.format(new Date(System.currentTimeMillis())) + "/" + generator.getEntity(); 		
 		
 		SupportFile.CreateDirectory(directoryPath);
 
 		generator.setPath(directoryPath);
 
+		//Sql Server
+		generatorSqlServerService.setFiles(generator);		
+		
 		//Net Core
 		generatorNetCoreService.setFiles(generator);		
 		
-		//Sql Server
-		generatorSqlServerService.setFiles(generator);
-
 		//Save		
-		return generatorRepository.setFiles(generator);
+		generatorRepository.setFiles(generator);
+		
+		generator.setPath(generator.getPath() + ".zip");
+		
+		return SupportFile.ZipMultipleFiles(generator.getPath(), generator.getFiles());
 	}
 }
