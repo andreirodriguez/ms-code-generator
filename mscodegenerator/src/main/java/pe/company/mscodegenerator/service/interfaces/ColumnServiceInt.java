@@ -7,5 +7,5 @@ import pe.company.mscodegenerator.application.domain.Column;
 
 public interface ColumnServiceInt 
 {
-	List<Column> getSelect(ConnectionDb connection,String table);
+	List<Column> getSelect(ConnectionDb connection,String table,String programmingLanguage);
 }

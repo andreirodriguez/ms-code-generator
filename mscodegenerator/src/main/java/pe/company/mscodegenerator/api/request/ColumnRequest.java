@@ -7,6 +7,7 @@ public class ColumnRequest implements Serializable
 {
 	private ConnectionDbRequest connectionDb;
 	private String table;
+	private String programmingLanguage;	
 	
 	public ConnectionDbRequest getConnectionDb() {
 		return connectionDb;
@@ -20,4 +21,11 @@ public class ColumnRequest implements Serializable
 	public void setTable(String table) {
 		this.table = table;
 	}
+	public String getProgrammingLanguage() {
+		return programmingLanguage;
+	}
+	public void setProgrammingLanguage(String programmingLanguage) {
+		this.programmingLanguage = programmingLanguage;
+	}
+	
 }

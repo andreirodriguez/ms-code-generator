@@ -38,7 +38,9 @@ public class ColumnRepositoryImp implements ColumnRepositoryInt
 			
 			o.setId(rs.getString("Id"));
 			o.setName(rs.getString("Name"));
+			o.setNameEntity(rs.getString("Name"));
 			o.setDataType(rs.getString("DataType"));
+			o.setDataTypeEntity(rs.getString("DataType"));
 			o.setLength(rs.getString("Length"));
 			o.setPrecision(rs.getInt("Precision"));
 			o.setIsNull(rs.getBoolean("IsNull"));

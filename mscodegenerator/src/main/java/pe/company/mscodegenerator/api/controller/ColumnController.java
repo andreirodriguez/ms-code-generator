@@ -27,7 +27,7 @@ public class ColumnController
 	@PostMapping("/search")
 	public ResponseEntity<List<ColumnResponse>> getTablesByBD(@RequestBody ColumnRequest request) 
 	{		 
- 		List<Column> l = columnService.getSelect(ConnectionDbMapper.MapperFromConnectionDbRequest(request.getConnectionDb()),request.getTable());
+ 		List<Column> l = columnService.getSelect(ConnectionDbMapper.MapperFromConnectionDbRequest(request.getConnectionDb()),request.getTable(),request.getProgrammingLanguage());
 		
 		return new ResponseEntity<>(ColumnMapper.MapperToListColumnResponse(l),HttpStatus.OK);
 	}	

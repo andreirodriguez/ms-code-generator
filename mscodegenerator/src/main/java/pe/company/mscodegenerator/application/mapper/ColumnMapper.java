@@ -13,7 +13,9 @@ public class ColumnMapper {
 		
 		o.setId(i.getId());
 		o.setName(i.getName());
+		o.setNameEntity(i.getNameEntity());
 		o.setDataType(i.getDataType());
+		o.setDataTypeEntity(i.getDataTypeEntity());
 		o.setLength(i.getLength());
 		o.setPrecision(i.getPrecision());
 		o.setDataTypeLength(i.getDataTypeLength());
