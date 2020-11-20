@@ -1,8 +1,5 @@
 logging.level:
   root: INFO
-  pe.realplaza.security: DEBUG
-  org.springframework.web: INFO
-  org.apache.http: DEBUG
 
 server:
   port: 8089
@@ -17,4 +14,3 @@ spring:
     username: sa
     password: Theo@ndre
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    initialize: false
