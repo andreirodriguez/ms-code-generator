@@ -1,0 +1,16 @@
+logging.level:
+  root: INFO
+
+server:
+  port: 8089
+    
+spring.jackson.time-zone: America/Lima
+spring.jackson.locale: es_PE
+
+spring:
+  datasource:
+    platform: sqlserver
+    url: jdbc:sqlserver://localhost;databaseName=PRUEBA
+    username: sa
+    password: Theo@ndre
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
